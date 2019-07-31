@@ -24,9 +24,9 @@ while read line; do
             # may have multiple active devices, so echo it here
             echo "SERVICE: $currentservice, $currentdevice, $currentmac"
             if [ "$currentservice" = "Wi-Fi" ]; then
-            	echo "WIFI FOUND, currentdevice $currentdevice";
             	echo "disabling wifi";
-            	echo "modifying MAC addr";
+                sudo /System/Library/PrivateFrameworks/Apple80211.framework/Resources/airport -z
+                echo "modifying MAC addr";
             	sudo ifconfig $currentdevice ether $macAddr || (echo "Failed to set addr" && exit 1);
             fi
         fi
@@ -37,11 +37,12 @@ if [ -z "$currentservice" ]; then
     >&2 echo "Could not find service to modify, is your Wi-Fi on? :("
     #exit 1
 else
-	echo "disabling and enabling wifi";
-	sudo networksetup -setnetworkserviceenabled Wi-Fi off
-	sleep 2;
-	sudo networksetup -setnetworkserviceenabled Wi-Fi on
-	sleep 2;
+	echo "fixing wifi";
+    sudo networksetup -detectnewhardware
+    sleep 1;
+    sudo networksetup -setnetworkserviceenabled Wi-Fi off
+    sleep 1;
+    sudo networksetup -setnetworkserviceenabled Wi-Fi on
 fi
 
 echo "NEW MAC ADDRESS `ifconfig en0 | grep ether`";
